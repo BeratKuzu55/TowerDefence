@@ -112,11 +112,7 @@ class Enemy{
 
     update(){
         this.x -= this.speed;
-        console.log(this.x);
-
-        if(false){
-            this.destroy();
-        }
+        //console.log(this.x);
     }
 
     draw(){
@@ -129,27 +125,57 @@ class Enemy{
             this.x - 65, this.y - 50, this.spriteWidth , this.spriteHeight );
     }
 
+    destroy()
+    {
+        this.destroy();
+    }
+
 }
+
+//const enemy = new Enemy();
 
 class EnemyPurple extends Enemy{
 
     constructor(){
         super();
-        this.atlama_Sayisi = 1;
+        this.jumping_TopBoundary = 50;
+        this.counter = 0;
+        this.jumpable_Area = canvas.offsetLeft + canvas.width - player.x;
+        this.jumping_Count =  Math.ceil(Math.random() * (level + 4));
+        this.jumping_Gap = ((this.jumpable_Area / this.jumping_Count) + 1);
+        console.log("canvas width - canvas x" , canvas , this.jumpable_Area , this.jumping_Count);
+        this.jumping_coordinates = [];
+        for(var i = 0; i < this.jumping_Count; i++){
+            this.jumping_coordinates.push(Math.ceil(canvas.offsetLeft + canvas.width - i*this.jumping_Gap));
+        }
+        console.log(this.jumping_coordinates);
     }
 
-    
-
     jump(){
+        console.log("jump is working");
+        this.counter += 1;
+        if(this.counter == this.jumping_TopBoundary){
+            this.y -= 1;
+        }else {
+            this.y += 1;
+        }
+    }
 
+    handleJumping(){
+        console.log("handleJump is working");
+        this.jump();
+        if(this.x <= this.jumping_coordinates[0] && this.x >= this.jumping_coordinates[0] - 10){
+            this.jump();
+        }
+        
     }
 }
 
-const enemy = new Enemy();
+const EnemyPurple1 = new EnemyPurple();
 
 function handleEnemy(){
-    enemy.draw();
-    enemy.update();
+    EnemyPurple1.draw();
+    EnemyPurple1.update();
 }
 
 // Tower 
@@ -160,7 +186,6 @@ const TowerImageArray = [
     "images/Tower/tower2.png"
 ];
 TowerImage.src = TowerImageArray[level - 1];
-console.log( TowerImage.naturalWidth + " " + TowerImage.height);
 class Tower{
     constructor(){
         this.x = 100;
@@ -216,6 +241,7 @@ function animate(){
     handlePlayer();
     handleTower();
     handleEnemy();
+    EnemyPurple1.handleJumping();
     gameFrame++;
     requestAnimationFrame(animate);
 }
