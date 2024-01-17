@@ -108,18 +108,22 @@ class Enemy{
         this.style;
         this.spriteWidth = 128;
         this.spriteHeight = 103;
+        this.isOutOfTheGame = false;
     }
 
     update(){
         this.x -= this.speed;
         //console.log(this.x);
+        if(this.isOutOfTheGame){
+            this.destroy();
+        }
     }
 
     draw(){
-        ctx.fillStyle = "red";
+        /*ctx.fillStyle = "red";
         ctx.beginPath();
         ctx.arc(this.x , this.y , this.radius , 0 , Math.PI * 2);
-        ctx.fill();
+        ctx.fill();*/
         ctx.drawImage(enemyImage , this.frameX * this.spriteWidth 
             , this.frameX * this.spriteHeight , this.spriteWidth , this.spriteHeight ,
             this.x - 65, this.y - 50, this.spriteWidth , this.spriteHeight );
@@ -138,44 +142,60 @@ class EnemyPurple extends Enemy{
 
     constructor(){
         super();
-        this.jumping_TopBoundary = 50;
+        this.jumping_TopBoundary = 105;
         this.counter = 0;
         this.jumpable_Area = canvas.offsetLeft + canvas.width - player.x;
         this.jumping_Count =  Math.ceil(Math.random() * (level + 4));
         this.jumping_Gap = ((this.jumpable_Area / this.jumping_Count) + 1);
         console.log("canvas width - canvas x" , canvas , this.jumpable_Area , this.jumping_Count);
         this.jumping_coordinates = [];
-        for(var i = 0; i < this.jumping_Count; i++){
+        for(var i = 1; i <= this.jumping_Count; i++){
             this.jumping_coordinates.push(Math.ceil(canvas.offsetLeft + canvas.width - i*this.jumping_Gap));
         }
-        console.log(this.jumping_coordinates);
+
     }
 
     jump(){
-        console.log("jump is working");
-        this.counter += 1;
-        if(this.counter == this.jumping_TopBoundary){
-            this.y -= 1;
+        this.counter += 5;
+        if(this.counter >= this.jumping_TopBoundary){
+            this.y += 5;
         }else {
-            this.y += 1;
+            this.y -= 5;
         }
     }
+    
 
     handleJumping(){
-        console.log("handleJump is working");
-        this.jump();
-        if(this.x <= this.jumping_coordinates[0] && this.x >= this.jumping_coordinates[0] - 10){
-            this.jump();
+        for(var i = 0; i < this.jumping_coordinates.length; i++){
+            
+            if(this.x <= this.jumping_coordinates[i] && this.x >= this.jumping_coordinates[i] - 39){
+                this.jump();
+            }
+            
         }
-        
+        if(this.counter >= this.jumping_TopBoundary && this.y > player.y){
+            this.counter = 0;
+        }
     }
 }
 
+class EnemyPink extends Enemy{
+    constructor(){
+        super();
+        this.TimetoDisappear;
+        // gameFrame % 50 == 0 buna benzer bi yol kullanılarak zamana dayalı görünmezlik katılabilir.
+    }
+
+    beDisappear(){
+
+    }
+}
 const EnemyPurple1 = new EnemyPurple();
 
 function handleEnemy(){
     EnemyPurple1.draw();
     EnemyPurple1.update();
+    EnemyPurple1.handleJumping();
 }
 
 // Tower 
@@ -241,7 +261,6 @@ function animate(){
     handlePlayer();
     handleTower();
     handleEnemy();
-    EnemyPurple1.handleJumping();
     gameFrame++;
     requestAnimationFrame(animate);
 }
