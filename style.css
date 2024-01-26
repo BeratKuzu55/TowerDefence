@@ -17,3 +17,12 @@ canvas{
     height: 550px;
     border: 4px solid black;
 }
+
+.changeOpacity04{
+    opacity: 0.4;
+}
+
+.changeOpacity1{
+    opacity: 1;
+}
+

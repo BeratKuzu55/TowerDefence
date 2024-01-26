@@ -1,3 +1,4 @@
+//import Player from "./player";
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext('2d');
 canvas.width = 1000;
@@ -46,7 +47,6 @@ class Player{
 
     }
 }
-
 const player = new Player();
 console.log("playerWidth " + player.width);
 function handlePlayer(){
@@ -88,20 +88,23 @@ class Fire{
 
 
 // Enemy 
-const enemyImage = new Image();
+
 const enemyImageArray = [
     "images/character/enemy1updated.png" , 
     "images/character/enemy2updated.png" , 
-    "images/character/enemy3updated.png"
+    "images/character/enemy3updated.png",
+    "images/character/enemy2changedOpacity.png"
 ]
 
-enemyImage.src = enemyImageArray[level - 1];
 class Enemy{
-    constructor(){
+    constructor(_enemyImage , speed){
+        this.enemyImage =  new Image();
+        this.enemyImage.src = _enemyImage;
+        this.enemyImage.opacity = 1;
         this.x = canvas.width + 100;
         this.y = player.y;
         this.radius = 35;
-        this.speed = 1;
+        this.speed = speed;
         this.frame = 0;
         this.frameX = 0;
         this.frameY = 0;
@@ -124,9 +127,11 @@ class Enemy{
         ctx.beginPath();
         ctx.arc(this.x , this.y , this.radius , 0 , Math.PI * 2);
         ctx.fill();*/
-        ctx.drawImage(enemyImage , this.frameX * this.spriteWidth 
+        ctx.drawImage(this.enemyImage , this.frameX * this.spriteWidth 
             , this.frameX * this.spriteHeight , this.spriteWidth , this.spriteHeight ,
             this.x - 65, this.y - 50, this.spriteWidth , this.spriteHeight );
+            /*let opacity = 0.4;
+            ctx.globalAlpha = opacity;*/
     }
 
     destroy()
@@ -141,7 +146,8 @@ class Enemy{
 class EnemyPurple extends Enemy{
 
     constructor(){
-        super();
+        super(enemyImageArray[0] , 1);
+    
         this.jumping_TopBoundary = 105;
         this.counter = 0;
         this.jumpable_Area = canvas.offsetLeft + canvas.width - player.x;
@@ -181,21 +187,54 @@ class EnemyPurple extends Enemy{
 
 class EnemyPink extends Enemy{
     constructor(){
-        super();
-        this.TimetoDisappear;
+        super(enemyImageArray[1] , 1.5);
+        this.TimetoDisappear = false;
+        this.gameframeTemp = 0;
+        this.ghostTime = 80;
         // gameFrame % 50 == 0 buna benzer bi yol kullanılarak zamana dayalı görünmezlik katılabilir.
+
     }
 
+    
     beDisappear(){
+        if(gameFrame % 180 == 0 && gameFrame != 0){
+            console.log("beDisappear has worked");
+            this.gameframeTemp = gameFrame;
+            this.TimetoDisappear = true;
+            this.enemyImage.src = enemyImageArray[3]; 
+        }
+       // console.log(this.gameframeTemp)
+        if(gameFrame - this.gameframeTemp > this.ghostTime && this.TimetoDisappear == true){
+            console.log("beappear");
+            this.TimetoDisappear = false;
+            this.enemyImage.src = enemyImageArray[1]; 
+        }
+    
+    }
+
+
+}
+
+class EnemyBlue extends Enemy{
+    constructor(){
+        super(enemyImageArray[2] , 2);
 
     }
 }
+
 const EnemyPurple1 = new EnemyPurple();
+const EnemyPink1 = new EnemyPink();
+const EnemyBlue1 = new EnemyBlue();
 
 function handleEnemy(){
     EnemyPurple1.draw();
     EnemyPurple1.update();
     EnemyPurple1.handleJumping();
+    EnemyPink1.draw();
+    EnemyPink1.update();
+    EnemyPink1.beDisappear();
+    EnemyBlue1.draw();
+    EnemyBlue1.update();
 }
 
 // Tower 
@@ -262,7 +301,9 @@ function animate(){
     handleTower();
     handleEnemy();
     gameFrame++;
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animate); /* 
+    fps e göre çalışır 
+    60 fps de saniyede 60 kere  */
 }
 
 animate();
