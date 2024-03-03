@@ -20,7 +20,6 @@ function check(e) {
 //Player
 const playerImage = new Image();
 playerImage.src = "images/character/Player.png";
-console.log(playerImage.width);
 class Player{
     constructor(){
        this.x = 250;
@@ -31,6 +30,8 @@ class Player{
        this.frameY = 0;
        this.spriteWidth = 128;
        this.spriteHeight = 128;
+
+       this.fire_count = 5;
     }
 
     draw(){
@@ -44,32 +45,39 @@ class Player{
     }
 
     update(){
-
+        
     }
 }
 const player = new Player();
-console.log("playerWidth " + player.width);
 function handlePlayer(){
     player.update();
     player.draw();
 }
-// Fire 
 
-const fireImage = new Image();
+// Fire 
 const fireImageSourceArray = [
-    "images/Fire/fireballblue" ,
-    "images/Fire/fireballpink" ,
-    "images/Fire/fireballred"
+    "images/Fire/fireballblue.png" ,
+    "images/Fire/fireballpink.png" ,
+    "images/Fire/fireballred.png" ,
+    "images/Fire/fireballredopposit.png",
+    "images/Fire/fireballredopposit2.png"  
 ];
 
 class Fire{
-    constructor(player){
-        this.x = player.x + 128;
-        this.y = player.y;
-        this.radius = 35;
+    constructor(character , _fireImage){
+        this.fireImage = new Image();
+        this.fireImage.src = _fireImage;
+        this.x = character.x + 128;
+        this.y = character.y;
+        this.radius = 25;
         this.speed = 5;
         this.color = "";
         this.distance;
+        this.frame = 0;
+        this.frameX = 0;
+        this.frameY = 0;
+        this.spriteWidth = 321;
+        this.spriteHeight = 137;
     }
 
     update(){
@@ -83,10 +91,52 @@ class Fire{
         ctx.fill();
         ctx.closePath();
         ctx.stroke();
+        ctx.drawImage( this.fireImage, this.frameX * this.spriteWidth 
+            , this.frameX * this.spriteHeight , this.spriteWidth , this.spriteHeight ,
+            this.x - 80 , this.y - 23, this.spriteWidth , this.spriteHeight);
     }
 }
 
+const fire1 = new Fire(player , fireImageSourceArray[4]);
 
+const fireArray = [new Fire(player , fireImageSourceArray[4])];
+var create_fire = false;
+window.addEventListener("keydown" , function(event){
+    console.log("keydown has worked");
+    if(event.key == "w"){
+        console.log("W was pressed");
+        if(player.fire_count != 0){
+            console.log("merhaba");
+            create_fire = true;
+            const fire2 = new Fire(player , fireImageSourceArray[4]);
+            fireArray.push(fire2);
+            player.fire_count --;
+         }   
+    }
+});
+
+
+canvas.addEventListener("click" , function(event){
+    
+        console.log("canvas was clicked");
+    
+});
+
+
+
+function handleFire(){
+    if(create_fire){
+        for(var i = 0; i<fireArray.length; i++){
+            fireArray[i].draw();
+            fireArray[i].update();
+            
+            if(fireArray[i].x > 900){
+                fireArray.splice(i , 1);
+            }
+        }
+    }
+   
+}
 // Enemy 
 
 const enemyImageArray = [
@@ -198,14 +248,12 @@ class EnemyPink extends Enemy{
     
     beDisappear(){
         if(gameFrame % 180 == 0 && gameFrame != 0){
-            console.log("beDisappear has worked");
             this.gameframeTemp = gameFrame;
             this.TimetoDisappear = true;
             this.enemyImage.src = enemyImageArray[3]; 
         }
        // console.log(this.gameframeTemp)
         if(gameFrame - this.gameframeTemp > this.ghostTime && this.TimetoDisappear == true){
-            console.log("beappear");
             this.TimetoDisappear = false;
             this.enemyImage.src = enemyImageArray[1]; 
         }
@@ -218,7 +266,13 @@ class EnemyPink extends Enemy{
 class EnemyBlue extends Enemy{
     constructor(){
         super(enemyImageArray[2] , 2);
+        this.enemy_blue_fire_array = [ new Fire(this , fireImageSourceArray[2])]
+    }
 
+
+    fire(){
+        const enemyBlueFire = new Fire(this , fireImageSourceArray[2]);
+        this.enemy_blue_fire_array.push(enemyBlueFire);
     }
 }
 
@@ -299,6 +353,7 @@ function animate(){
     handleBackground();
     handlePlayer();
     handleTower();
+    handleFire();
     handleEnemy();
     gameFrame++;
     requestAnimationFrame(animate); /* 
