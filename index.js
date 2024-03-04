@@ -67,7 +67,7 @@ class Fire{
     constructor(character , _fireImage){
         this.fireImage = new Image();
         this.fireImage.src = _fireImage;
-        this.x = character.x + 128;
+        this.x = character.x + 64;
         this.y = character.y;
         this.radius = 25;
         this.speed = 5;
@@ -195,13 +195,13 @@ class Enemy{
 
 class EnemyPurple extends Enemy{
 
-    constructor(){
+    constructor(level_count){
         super(enemyImageArray[0] , 1);
     
         this.jumping_TopBoundary = 105;
         this.counter = 0;
         this.jumpable_Area = canvas.offsetLeft + canvas.width - player.x;
-        this.jumping_Count =  Math.ceil(Math.random() * (level + 4));
+        this.jumping_Count =  Math.ceil((level * 4));
         this.jumping_Gap = ((this.jumpable_Area / this.jumping_Count) + 1);
         console.log("canvas width - canvas x" , canvas , this.jumpable_Area , this.jumping_Count);
         this.jumping_coordinates = [];
@@ -235,7 +235,7 @@ class EnemyPurple extends Enemy{
     }
 }
 
-class EnemyPink extends Enemy{
+class EnemyYellow extends Enemy{
     constructor(){
         super(enemyImageArray[1] , 1.5);
         this.TimetoDisappear = false;
@@ -267,6 +267,7 @@ class EnemyBlue extends Enemy{
     constructor(){
         super(enemyImageArray[2] , 2);
         this.enemy_blue_fire_array = [ new Fire(this , fireImageSourceArray[2])]
+        this.enemy_blue_fire_count = 3 * level;
     }
 
 
@@ -276,27 +277,20 @@ class EnemyBlue extends Enemy{
     }
 }
 
-const EnemyPurple1 = new EnemyPurple();
-const EnemyPink1 = new EnemyPink();
+//const EnemyPurple1 = new EnemyPurple(level);
+const EnemyPink1 = new EnemyYellow();
 const EnemyBlue1 = new EnemyBlue();
 
-function handleEnemy(){
-    EnemyPurple1.draw();
-    EnemyPurple1.update();
-    EnemyPurple1.handleJumping();
-    EnemyPink1.draw();
-    EnemyPink1.update();
-    EnemyPink1.beDisappear();
-    EnemyBlue1.draw();
-    EnemyBlue1.update();
-}
+
 
 // Tower 
 
 const TowerImage = new Image();
 const TowerImageArray = [
     "images/tower/tower1updated.png" , 
-    "images/Tower/tower2.png"
+    "images/Tower/tower2.png",
+    "images/tower/tower1updated.png" ,
+    "images/tower/tower1updated.png" ,
 ];
 TowerImage.src = TowerImageArray[level - 1];
 class Tower{
@@ -327,13 +321,13 @@ class Tower{
             this.x - 100, this.y - 85, this.spriteWidth , this.spriteHeight);
     }
 }
-
 const tower = new Tower();
 
 function handleTower(){
     tower.update();
     tower.draw();
 }
+
 // background 
 const backgroundArray = [
     "images/background/game_background_1.png" , 
@@ -342,11 +336,57 @@ const backgroundArray = [
 
 const backgroundImage = new Image();
 function handleBackground(){
-    if(level == 1){
-        backgroundImage.src = backgroundArray[level - 1];
+    if(true){
+        backgroundImage.src = backgroundArray[1];
         ctx.drawImage(backgroundImage , 0 , 0 , canvas.width , canvas.height);
     }
 }
+
+var enemyPurpleArray = [new EnemyPurple(level)];
+
+var is_created_level_enemies = false;
+
+function create_level_enemies(){
+    if(level == 1){
+
+        if(gameFrame % (150 + 30*level) == 0 && !is_created_level_enemies && gameFrame != 0){
+            console.log("create_level_enemies");
+            enemyPurpleArray.push(new EnemyPurple(level));
+        }
+        
+        if(enemyPurpleArray.length == level * 5){
+            is_created_level_enemies = true;
+        }
+    }
+
+    
+    for(var i = 0; i<enemyPurpleArray.length; i++){
+        enemyPurpleArray[i].draw();
+        enemyPurpleArray[i].update();
+        enemyPurpleArray[i].handleJumping();
+    }
+}
+
+function handleEnemy(){
+    //EnemyPurple1.draw();
+    //EnemyPurple1.update();
+    //EnemyPurple1.handleJumping();
+    EnemyPink1.draw();
+    EnemyPink1.update();
+    EnemyPink1.beDisappear();
+    EnemyBlue1.draw();
+    EnemyBlue1.update();
+}
+
+/*
+function handleLevel(){
+    if(level == 1){
+        for(var i = 0; i<enemyPurpleArray.length; i++){
+            enemyPurpleArray[i].draw();
+            enemyPurpleArray[i].update();
+        } 
+    }
+}  */
 
 function animate(){
     ctx.clearRect(0 , 0 , canvas.width , canvas.height);
@@ -355,6 +395,7 @@ function animate(){
     handleTower();
     handleFire();
     handleEnemy();
+    create_level_enemies();
     gameFrame++;
     requestAnimationFrame(animate); /* 
     fps e göre çalışır 
