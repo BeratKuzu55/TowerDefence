@@ -5,7 +5,6 @@ canvas.width = 1000;
 canvas.height = 550;
 
 let gameFrame = 0;
-ctx.font = "50px Georgia";
 let gameSpeed = 1;
 let GameOver = false;
 var level = 1;
@@ -17,6 +16,64 @@ function check(e) {
     alert(e.keyCode);
 }
 */
+
+// Tower 
+
+const TowerImage = new Image();
+const TowerImageArray = [
+    "images/tower/tower1updated.png" , 
+    "images/Tower/tower2.png",
+    "images/tower/tower1updated.png" ,
+    "images/tower/tower1updated.png" ,
+];
+TowerImage.src = TowerImageArray[level - 1];
+class Tower{
+    constructor(){
+        this.x = 100;
+        this.y = 350;
+        this.radius = 60;
+        this.frame = 0;
+        this.frameX = 0;
+        this.frameY = 0;
+        this.width = 1;
+        this.height = 1;
+        this.spriteWidth = 256;
+        this.spriteHeight = 158;
+
+        this.health = 1000;
+    }
+
+    update(){
+
+    }
+
+    draw(){
+        ctx.fillStyle = "green";
+        ctx.beginPath();
+        ctx.arc(this.x , this.y , this.radius , 0 , Math.PI * 2);
+        ctx.fill();
+        ctx.drawImage(TowerImage , this.frameX * this.spriteWidth 
+            , this.frameX * this.spriteHeight , this.spriteWidth , this.spriteHeight ,
+            this.x - 100, this.y - 85, this.spriteWidth , this.spriteHeight);
+    }
+}
+const tower = new Tower();
+
+ctx.font = "40px War-Heroes";
+
+
+function handleText(){
+    ctx.fillStyle = "#D59100";
+    ctx.fillText(`Tower:${tower.health.toString()}` , 20 , 50);
+    ctx.fillText(`Level:${level}` , canvas.width/2 - 50 , 50);
+    ctx.fillText(`Fire: ****` , 20 , 100);
+}
+
+function handleTower(){
+    tower.update();
+    tower.draw();
+}
+
 //Player
 const playerImage = new Image();
 playerImage.src = "images/character/Player.png";
@@ -32,6 +89,7 @@ class Player{
        this.spriteHeight = 128;
 
        this.fire_count = 5;
+       this.point = 0;
     }
 
     draw(){
@@ -60,11 +118,12 @@ const fireImageSourceArray = [
     "images/Fire/fireballpink.png" ,
     "images/Fire/fireballred.png" ,
     "images/Fire/fireballredopposit.png",
-    "images/Fire/fireballredopposit2.png"  
+    "images/Fire/fireballredopposit2.png" , 
+    "images/Fire/fireballblueSingle.png"
 ];
 
 class Fire{
-    constructor(character , _fireImage){
+    constructor(character , _fireImage , direction){
         this.fireImage = new Image();
         this.fireImage.src = _fireImage;
         this.x = character.x + 64;
@@ -78,10 +137,17 @@ class Fire{
         this.frameY = 0;
         this.spriteWidth = 321;
         this.spriteHeight = 137;
+        this.direction = direction;
     }
 
     update(){
-        this.x += this.speed; 
+        if(this.direction){
+            this.x += this.speed;
+        }
+        else {
+            this.x -= this.speed;
+        }
+         
     }
 
     draw(){
@@ -91,15 +157,23 @@ class Fire{
         ctx.fill();
         ctx.closePath();
         ctx.stroke();
-        ctx.drawImage( this.fireImage, this.frameX * this.spriteWidth 
-            , this.frameX * this.spriteHeight , this.spriteWidth , this.spriteHeight ,
-            this.x - 80 , this.y - 23, this.spriteWidth , this.spriteHeight);
+        if(this.direction){
+            ctx.drawImage( this.fireImage, this.frameX * this.spriteWidth 
+                , this.frameX * this.spriteHeight , this.spriteWidth , this.spriteHeight ,
+                this.x - 80 , this.y - 23, this.spriteWidth , this.spriteHeight);
+        }
+        else {
+            ctx.drawImage( this.fireImage, this.frameX * this.spriteWidth 
+                , this.frameX * this.spriteHeight , this.spriteWidth , this.spriteHeight ,
+                this.x - 25 , this.y - 30, this.spriteWidth , this.spriteHeight);
+        }
+        
     }
 }
 
-const fire1 = new Fire(player , fireImageSourceArray[4]);
+const fire1 = new Fire(player , fireImageSourceArray[4] ,true);
 
-const fireArray = [new Fire(player , fireImageSourceArray[4])];
+const fireArray = [new Fire(player , fireImageSourceArray[4] , true)];
 var create_fire = false;
 window.addEventListener("keydown" , function(event){
     console.log("keydown has worked");
@@ -108,7 +182,7 @@ window.addEventListener("keydown" , function(event){
         if(player.fire_count != 0){
             console.log("merhaba");
             create_fire = true;
-            const fire2 = new Fire(player , fireImageSourceArray[4]);
+            const fire2 = new Fire(player , fireImageSourceArray[4] , true);
             fireArray.push(fire2);
             player.fire_count --;
          }   
@@ -147,7 +221,7 @@ const enemyImageArray = [
 ]
 
 class Enemy{
-    constructor(_enemyImage , speed){
+    constructor(_enemyImage , speed , enemy_type){
         this.enemyImage =  new Image();
         this.enemyImage.src = _enemyImage;
         this.enemyImage.opacity = 1;
@@ -161,14 +235,22 @@ class Enemy{
         this.style;
         this.spriteWidth = 128;
         this.spriteHeight = 103;
-        this.isOutOfTheGame = false;
+        this.isExplosed = false;
+        this.isDestroed = false;
+        this.enemyType = enemy_type;
+    
     }
 
     update(){
         this.x -= this.speed;
         //console.log(this.x);
-        if(this.isOutOfTheGame){
+        if(this.isDestroed){
             this.destroy();
+            player.point = 100;
+        }
+        
+        if(this.x <= tower.x && !this.isExplosed){
+            this.explose(this.enemyType);
         }
     }
 
@@ -184,9 +266,36 @@ class Enemy{
             ctx.globalAlpha = opacity;*/
     }
 
-    destroy()
+    destroy(enemyArray , enemy_type)
     {
-        this.destroy();
+        switch (enemy_type){
+            case "purple":
+                player.point += 150;
+            case "yellow":
+                player.point += 250;
+            case "blue":
+                player.point += 500;
+                
+        }
+    }
+
+    explose(enemy_type){
+        switch (enemy_type){
+            case "purple":
+                tower.health -= 350;
+                this.isExplosed = true;
+                break;
+            case "yellow":
+                tower.health -= 500;
+                this.isExplosed = true;
+                break;
+            case "blue":
+                tower.health -= 1000;
+                this.isExplosed = true;
+                break;
+            
+                
+        }
     }
 
 }
@@ -196,7 +305,7 @@ class Enemy{
 class EnemyPurple extends Enemy{
 
     constructor(level_count){
-        super(enemyImageArray[0] , 1);
+        super(enemyImageArray[0] , 1 , "purple");
     
         this.jumping_TopBoundary = 105;
         this.counter = 0;
@@ -237,7 +346,7 @@ class EnemyPurple extends Enemy{
 
 class EnemyYellow extends Enemy{
     constructor(){
-        super(enemyImageArray[1] , 1.5);
+        super(enemyImageArray[1] , 1.5 , "yellow");
         this.TimetoDisappear = false;
         this.gameframeTemp = 0;
         this.ghostTime = 80;
@@ -265,68 +374,32 @@ class EnemyYellow extends Enemy{
 
 class EnemyBlue extends Enemy{
     constructor(){
-        super(enemyImageArray[2] , 2);
-        this.enemy_blue_fire_array = [ new Fire(this , fireImageSourceArray[2])]
+        super(enemyImageArray[2] , 2 , "blue");
+        this.enemy_blue_fire_array = [ new Fire(this , fireImageSourceArray[5])]
         this.enemy_blue_fire_count = 3 * level;
     }
 
 
     fire(){
-        const enemyBlueFire = new Fire(this , fireImageSourceArray[2]);
+        const enemyBlueFire = new Fire(this , fireImageSourceArray[5] , false);
         this.enemy_blue_fire_array.push(enemyBlueFire);
+
+    }
+
+    handleEnemyBlueFire(){
+        for(var i = 0; i<this.enemy_blue_fire_array.length; i++){
+            this.enemy_blue_fire_array[i].draw();
+            this.enemy_blue_fire_array[i].update();
+        }
     }
 }
 
 //const EnemyPurple1 = new EnemyPurple(level);
 const EnemyPink1 = new EnemyYellow();
 const EnemyBlue1 = new EnemyBlue();
+EnemyBlue1.fire();
 
 
-
-// Tower 
-
-const TowerImage = new Image();
-const TowerImageArray = [
-    "images/tower/tower1updated.png" , 
-    "images/Tower/tower2.png",
-    "images/tower/tower1updated.png" ,
-    "images/tower/tower1updated.png" ,
-];
-TowerImage.src = TowerImageArray[level - 1];
-class Tower{
-    constructor(){
-        this.x = 100;
-        this.y = 350;
-        this.radius = 60;
-        this.frame = 0;
-        this.frameX = 0;
-        this.frameY = 0;
-        this.width = 1;
-        this.height = 1;
-        this.spriteWidth = 256;
-        this.spriteHeight = 158;
-    }
-
-    update(){
-
-    }
-
-    draw(){
-        ctx.fillStyle = "green";
-        ctx.beginPath();
-        ctx.arc(this.x , this.y , this.radius , 0 , Math.PI * 2);
-        ctx.fill();
-        ctx.drawImage(TowerImage , this.frameX * this.spriteWidth 
-            , this.frameX * this.spriteHeight , this.spriteWidth , this.spriteHeight ,
-            this.x - 100, this.y - 85, this.spriteWidth , this.spriteHeight);
-    }
-}
-const tower = new Tower();
-
-function handleTower(){
-    tower.update();
-    tower.draw();
-}
 
 // background 
 const backgroundArray = [
@@ -349,7 +422,7 @@ var is_created_level_enemies = false;
 function create_level_enemies(){
     if(level == 1){
 
-        if(gameFrame % (150 + 30*level) == 0 && !is_created_level_enemies && gameFrame != 0){
+        if(gameFrame % (200 + 30*level) == 0 && !is_created_level_enemies && gameFrame != 0){
             console.log("create_level_enemies");
             enemyPurpleArray.push(new EnemyPurple(level));
         }
@@ -368,9 +441,6 @@ function create_level_enemies(){
 }
 
 function handleEnemy(){
-    //EnemyPurple1.draw();
-    //EnemyPurple1.update();
-    //EnemyPurple1.handleJumping();
     EnemyPink1.draw();
     EnemyPink1.update();
     EnemyPink1.beDisappear();
@@ -378,15 +448,6 @@ function handleEnemy(){
     EnemyBlue1.update();
 }
 
-/*
-function handleLevel(){
-    if(level == 1){
-        for(var i = 0; i<enemyPurpleArray.length; i++){
-            enemyPurpleArray[i].draw();
-            enemyPurpleArray[i].update();
-        } 
-    }
-}  */
 
 function animate(){
     ctx.clearRect(0 , 0 , canvas.width , canvas.height);
@@ -396,6 +457,8 @@ function animate(){
     handleFire();
     handleEnemy();
     create_level_enemies();
+    EnemyBlue1.handleEnemyBlueFire();
+    handleText();
     gameFrame++;
     requestAnimationFrame(animate); /* 
     fps e göre çalışır 
