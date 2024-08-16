@@ -1,5 +1,5 @@
 class Enemy{
-    constructor(_enemyImage , speed){
+    constructor(_enemyImage , speed , enemy_type){
         this.enemyImage =  new Image();
         this.enemyImage.src = _enemyImage;
         this.enemyImage.opacity = 1;
@@ -13,14 +13,22 @@ class Enemy{
         this.style;
         this.spriteWidth = 128;
         this.spriteHeight = 103;
-        this.isOutOfTheGame = false;
+        this.isExplosed = false;
+        this.isDestroed = false;
+        this.enemyType = enemy_type;
+    
     }
 
     update(){
         this.x -= this.speed;
         //console.log(this.x);
-        if(this.isOutOfTheGame){
+        if(this.isDestroed){
             this.destroy();
+            player.point = 100;
+        }
+        
+        if(this.x <= tower.x && !this.isExplosed){
+            this.explose(this.enemyType);
         }
     }
 
@@ -36,9 +44,38 @@ class Enemy{
             ctx.globalAlpha = opacity;*/
     }
 
-    destroy()
+    destroy(enemyArray , enemy_type)
     {
-        this.destroy();
+        switch (enemy_type){
+            case "purple":
+                player.point += 150;
+            case "yellow":
+                player.point += 250;
+            case "blue":
+                player.point += 500;
+                
+        }
+    }
+
+    explose(enemy_type){
+        switch (enemy_type){
+            case "purple":
+                tower.health -= 350;
+                this.isExplosed = true;
+                break;
+            case "yellow":
+                tower.health -= 500;
+                this.isExplosed = true;
+                break;
+            case "blue":
+                tower.health -= 1000;
+                this.isExplosed = true;
+                break;
+            
+                
+        }
     }
 
 }
+
+window.Enemy = Enemy;
