@@ -14,6 +14,8 @@ class Fire{
         this.spriteWidth = 321;
         this.spriteHeight = 137;
         this.direction = direction;
+        this.damage = 100;
+        this.damageOccurred = false;
     }
 
     update(){

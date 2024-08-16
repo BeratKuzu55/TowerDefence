@@ -1,7 +1,7 @@
 class EnemyPurple extends Enemy{
 
-    constructor(level_count){
-        super(enemyImageArray[0] , 1 , "purple");
+    constructor(){
+        super(enemyImageArray[0] , 1 , "purple" , 90);
     
         this.jumping_TopBoundary = 105;
         this.counter = 0;

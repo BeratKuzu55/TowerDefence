@@ -102,13 +102,14 @@ function handleFire() {
             fireArray[i].draw();
             fireArray[i].update();
 
-            if (fireArray[i].x > 900) {
+            if (fireArray[i].x > 950) {
                 fireArray.splice(i, 1);
             }
         }
     }
 
 }
+
 // Enemy 
 
 const enemyImageArray = [
@@ -118,7 +119,11 @@ const enemyImageArray = [
     "images/character/enemy2changedOpacity.png"
 ]
 
-//const enemy = new Enemy();
+var enemyArray = [];
+var enemyPurpleArray = [new EnemyPurple(level)];
+var enemyYellowArray = [new EnemyYellow()];
+var enemyBlueArray= [new EnemyBlue()]
+var is_created_level_enemies = false;
 
 
 //const EnemyPurple1 = new EnemyPurple(level);
@@ -126,7 +131,26 @@ const EnemyPink1 = new EnemyYellow();
 const EnemyBlue1 = new EnemyBlue();
 EnemyBlue1.fire();
 
+function handeEnemyDamage() { 
+    handlePurpleEnemyDamage();
+}
 
+function handlePurpleEnemyDamage(){
+    for(var i = 0; i < enemyPurpleArray.length; i++){
+        for(var j= 0; j < fireArray.length; j++){
+         if(enemyPurpleArray[i].x - 10 <= fireArray[j].x && enemyPurpleArray[i].x > fireArray[j].x && !fireArray[j].damageOccurred){
+            enemyPurpleArray[i].healt = enemyPurpleArray[i].healt - 50;
+            console.log("enemy purple healt:" + enemyPurpleArray[i].healt);
+            fireArray.slice(j , 1); 
+            fireArray[j].damageOccurred = true;
+
+            if(enemyPurpleArray[i].healt <= 0){
+                enemyPurpleArray[i].destroy();
+            }
+         }
+        }
+     }
+}
 
 // background 
 const backgroundArray = [
@@ -142,18 +166,12 @@ function handleBackground() {
     }
 }
 
-var enemyPurpleArray = [new EnemyPurple(level)];
-var enemyYellowArray = [new EnemyYellow()];
-var enemyBlueArray= [new EnemyBlue()]
-var is_created_level_enemies = false;
 
-function create_level_enemies() {
-
-
+function handleEnemy() {
     if (gameFrame % (1000 / Math.ceil(level/3)) == 0 && !is_created_level_enemies && gameFrame > 100) {
-        console.log("create_level_enemies");
-        enemyPurpleArray.push(new EnemyPurple(level));
-
+        const newEnemyPurple = new EnemyPurple();
+        enemyPurpleArray.push(newEnemyPurple);
+        enemyArray.push(newEnemyPurple);
     }
 
     // if (enemyPurpleArray.length == level * 7) {
@@ -161,11 +179,15 @@ function create_level_enemies() {
     // }
 
     if(level > 0 && gameFrame % (700 / Math.ceil(level/3)) == 0 && ! is_created_level_enemies && gameFrame > 2650){
-        enemyYellowArray.push(new EnemyYellow());
+        const newEnemeyYellow = new EnemyYellow();
+        enemyYellowArray.push(newEnemeyYellow);
+        enemyArray.push(newEnemeyYellow)
     }
 
     if(level > 0 && gameFrame % (800 / Math.ceil(level/3)) == 0 && ! is_created_level_enemies && gameFrame > 150){
-        enemyBlueArray.push(new EnemyBlue());
+        const newEnemyBlue = new EnemyBlue();
+        enemyBlueArray.push(newEnemyBlue);
+        enemyArray.push(newEnemyBlue);
     }
 
 
@@ -188,14 +210,6 @@ function create_level_enemies() {
     }
 }
 
-function handleEnemy() {
-    // EnemyPink1.draw();
-    // EnemyPink1.update();
-    // EnemyPink1.beDisappear();
-    // EnemyBlue1.draw();
-    // EnemyBlue1.update();
-}
-
 
 function animate(timeStamp) {
 
@@ -208,7 +222,7 @@ function animate(timeStamp) {
     handleTower();
     handleFire();
     handleEnemy();
-    create_level_enemies();
+    handeEnemyDamage();
     EnemyBlue1.handleEnemyBlueFire();
     handleText();
     gameFrame += 1;

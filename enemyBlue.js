@@ -1,6 +1,6 @@
 class EnemyBlue extends Enemy{
     constructor(){
-        super(enemyImageArray[2] , 1.2 , "blue");
+        super(enemyImageArray[2] , 1.2 , "blue" , 250);
         this.enemy_blue_fire_array = [ new Fire(this , fireImageSourceArray[5])]
         this.enemy_blue_fire_count = 3 * level;
     }

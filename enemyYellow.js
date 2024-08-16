@@ -1,6 +1,6 @@
 class EnemyYellow extends Enemy{
     constructor(){
-        super(enemyImageArray[1] , 1.1 , "yellow");
+        super(enemyImageArray[1] , 1.1 , "yellow" , 120);
         this.TimetoDisappear = false;
         this.gameframeTemp = 0;
         this.ghostTime = 80;
