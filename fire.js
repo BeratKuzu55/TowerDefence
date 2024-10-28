@@ -16,6 +16,7 @@ class Fire{
         this.direction = direction;
         this.damage = 100;
         this.damageOccurred = false;
+        // deneme değişikliği 1 
     }
 
     update(){
